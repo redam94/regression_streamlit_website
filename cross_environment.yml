@@ -6,8 +6,11 @@ dependencies:
   - mlflow
   - statsmodels
   - pymc
+  - pip
   - python=3.11
   - streamlit
   - jupyter
   - pydantic
+  - pip:
+      - st-pages==0.4.5
 prefix: /home/mattr/miniconda3/envs/streamlit_mlflow
