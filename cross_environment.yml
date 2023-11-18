@@ -9,4 +9,5 @@ dependencies:
   - python=3.11
   - streamlit
   - jupyter
+  - pydantic
 prefix: /home/mattr/miniconda3/envs/streamlit_mlflow
