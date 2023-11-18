@@ -1,0 +1,12 @@
+name: streamlit_mlflow
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - mlflow
+  - statsmodels
+  - pymc
+  - python=3.11
+  - streamlit
+  - jupyter
+prefix: /home/mattr/miniconda3/envs/streamlit_mlflow
