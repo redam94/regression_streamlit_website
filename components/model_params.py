@@ -5,6 +5,9 @@ import pandas as pd
 from .utils.constants import TRANSFORM_DETAIL_COLUMNS, COLUMN_SETTINGS
 from .callbacks.data_frames import transform_df_callback
 
+def model_params():
+  pass
+
 
 def select_variables(data):
   
