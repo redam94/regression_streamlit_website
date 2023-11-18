@@ -1,6 +1,12 @@
 import streamlit as st
+from st_pages import show_pages_from_config, add_page_title
 
-from my_pages.main_page import run_regression_app
+
+
+
+show_pages_from_config()
+
+
 
 if __name__ == '__main__':
-  run_regression_app()
+  st.title("Welcome to the regression app")

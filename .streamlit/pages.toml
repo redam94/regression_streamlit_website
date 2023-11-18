@@ -1,0 +1,8 @@
+[[pages]]
+path = "app.py"
+name = "Home"
+icon = "🏠"
+
+[[pages]]
+path = "my_pages/main_page.py"
+name = "Regression"
