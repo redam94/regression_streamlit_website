@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from uuid import uuid4
 
-from .components.utils.pipelines import transform_data
-from .components.utils.constants import TRANSFORM_DETAIL_COLUMNS, COLUMN_SETTINGS
-from .components.utils.plotting import plot_resid, plot_corr, plot_transfromed_data, plot_avm
-from .components.model_params import select_variables
+from components.utils.pipelines import transform_data
+from components.utils.constants import TRANSFORM_DETAIL_COLUMNS, COLUMN_SETTINGS
+from components.utils.plotting import plot_resid, plot_corr, plot_transfromed_data, plot_avm
+from components.model_params import select_variables
 
-from .components.datamodels.model import SaveModel
-from .components.models.regression.statistical.ols import OLS
+from components.datamodels.model import SaveModel
+from components.models.regression.statistical.ols import OLS
 
 data = pd.read_csv('./data/fake_mff.csv')[["Geography", 'Period', 'VariableValue', 'VariableName']].pivot(index=['Geography', 'Period'], columns='VariableName', values='VariableValue').reset_index()
 
@@ -115,6 +115,10 @@ def run_regression_app():
         y_cap = model.model.predict(X)
         if group == 'None':
           st.pyplot(plot_avm(range(len(Y)) if time=='None' else pd.to_datetime(data[time]), Y, y_cap, model.model.fitted_model.resid))
+        if group != 'None':
+          groups = data[group].unique()
+          selected_group = st.selectbox('Group', groups, key=model.id)
+          st.pyplot(plot_avm(range(len(Y[data[group]==selected_group])) if time=='None' else pd.to_datetime(data[data[group]==selected_group][time]), Y[data[group]==selected_group], y_cap[data[group]==selected_group], model.model.fitted_model.resid[data[group]==selected_group]))
         #st.pyplot(plot_avm(range(len(Y)) if time=='None' else time, Y, y_cap, fitted_model.resid))
     #with st.expander("Residual Plot"):
         y_cap = model.model.predict(X)
