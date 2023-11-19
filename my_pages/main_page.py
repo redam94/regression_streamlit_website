@@ -12,6 +12,7 @@ from components.model_params import select_variables
 
 from components.datamodels.model import SaveModel
 from components.models.regression.statistical.ols import OLS
+from components.models.regression.statistical.mixed_effects import MixedEffects
 
 data = pd.read_csv('./data/fake_mff.csv')[["Geography", 'Period', 'VariableValue', 'VariableName']].pivot(index=['Geography', 'Period'], columns='VariableName', values='VariableValue').reset_index()
 
@@ -58,9 +59,9 @@ def save_model(fitted_model, x, y, transformation_details):
                 id=uuid4())
   )
 
-def run_regression(X, y, model, method:str='qr', cov_type:str='nonrobust'):
+def run_regression(X, y, groups, model):
     # Make predictions using your regression model
-    fitted_model = model.fit(X, y, method, cov_type=cov_type)
+    fitted_model = model.fit(X, y, groups)
     return fitted_model
 
 
@@ -96,9 +97,9 @@ def run_regression_app():
   if d:
     st.write('Regression Results:')
     
-    model = OLS('OLS')
+    model = MixedEffects("test") #OLS('OLS')
   
-    fitted_model = run_regression(X, Y, model)
+    fitted_model = run_regression(X, Y, data[group], model)
     #st.write(fitted_model.summary())
     save_model(fitted_model, X, Y, transformation_details)
     #Get the predicted values of y from the fitted model
@@ -106,22 +107,23 @@ def run_regression_app():
       
   if 'fitted_model' in st.session_state:
     for i, model in enumerate(st.session_state.fitted_model[::-1]):
-      with st.expander(str(model.id)[:8] + f" R2: {model.model.fitted_model.rsquared:.3f}" + f" Time: {model.time}", expanded=(i==0 and d)):
+      with st.expander(str(model.id)[:8] + f" BIC: {model.model.fitted_model.bic:.3f}" + f" Time: {model.time}", expanded=(i==0 and d)):
         st.write(model.time)
         st.write(model.model.summary())
         #with st.expander("AVM Plot"):
         X = model.ind
         Y = model.dep
-        y_cap = model.model.predict(X)
+        
         if group == 'None':
           st.pyplot(plot_avm(range(len(Y)) if time=='None' else pd.to_datetime(data[time]), Y, y_cap, model.model.fitted_model.resid))
         if group != 'None':
           groups = data[group].unique()
           selected_group = st.selectbox('Group', groups, key=model.id)
+          y_cap = model.model.predict(X, selected_group)
           st.pyplot(plot_avm(range(len(Y[data[group]==selected_group])) if time=='None' else pd.to_datetime(data[data[group]==selected_group][time]), Y[data[group]==selected_group], y_cap[data[group]==selected_group], model.model.fitted_model.resid[data[group]==selected_group]))
         #st.pyplot(plot_avm(range(len(Y)) if time=='None' else time, Y, y_cap, fitted_model.resid))
     #with st.expander("Residual Plot"):
-        y_cap = model.model.predict(X)
+        y_cap = model.model.predict(X, selected_group)
         st.pyplot(plot_resid(model.model.fitted_model, y_cap))
           
         

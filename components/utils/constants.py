@@ -40,3 +40,5 @@ COLUMN_SETTINGS = {
   'lag': st.column_config.NumberColumn(default=0),
   'decay': st.column_config.NumberColumn(default=0.0, min_value=0.0, max_value=1.0)
   }
+
+ORGINIZATIONS = ['None', 'Org', 'Org2']
