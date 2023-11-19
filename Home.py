@@ -4,9 +4,12 @@ from components.utils.constants import ORGINIZATIONS
 
 
 
-show_pages_from_config()
 
+
+
+  
 def main_page():
+  
   if 'org' not in st.session_state:
     st.session_state['org'] = 'None'
   if st.session_state.org == 'None':
@@ -23,4 +26,5 @@ def main_page():
 
 
 if __name__ == '__main__':
+  show_pages_from_config()
   main_page()

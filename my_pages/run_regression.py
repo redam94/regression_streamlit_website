@@ -16,11 +16,7 @@ from components.models.regression.statistical.mixed_effects import MixedEffects
 
 data = pd.read_csv('./data/fake_mff.csv')[["Geography", 'Period', 'VariableValue', 'VariableName']].pivot(index=['Geography', 'Period'], columns='VariableName', values='VariableValue').reset_index()
 
-def load_data():
-  file_data = st.file_uploader('Upload Data', type=['csv', 'xlsx'])
-  if file_data is not None:
-    data = pd.read_csv(file_data)
-    return data
+
   
   
 
@@ -69,9 +65,7 @@ def run_regression_app():
   # Define the user interface elements
   st.title('Regression App')
   st.write('Enter the regression parameters:')
-  test_data = load_data()
-  if test_data is not None:
-    st.write(test_data.head())
+  
   
   with st.sidebar:
     y, x, transformation_details, time, group = select_variables(data)
