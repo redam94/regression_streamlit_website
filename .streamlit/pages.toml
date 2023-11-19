@@ -1,8 +1,9 @@
 [[pages]]
-path = "app.py"
+path = "Home.py"
 name = "Home"
 icon = "🏠"
 
+
 [[pages]]
-path = "my_pages/main_page.py"
-name = "Regression"
+path = "my_pages/run_regression.py"
+name = "Analyze"
