@@ -14,7 +14,8 @@ def plot_resid(fitted_model, y_cap):
  
     ax.scatter(y_cap, fitted_model.resid)
     return fig
-  
+
+@st.cache_data
 def plot_avm(index, actual, predicted, residuals):
   fig, ax = plt.subplots(figsize=(10, 5))
   ax.plot(index, actual, color='k', label='Actual')
