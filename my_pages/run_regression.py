@@ -61,6 +61,17 @@ def run_regression(X, y, groups, model):
     return fitted_model
 
 
+def add_trend(data, time):
+  if time is None:
+    return data
+  
+  start = data[time].min()
+  trend = (data[time]-start)/np.timedelta64(1, 'D')
+  trend = trend/trend.max()
+
+  data['trend'] = trend
+  
+
 def run_regression_app():
   # Define the user interface elements
   st.title('Regression App')
@@ -113,11 +124,11 @@ def run_regression_app():
         if group != 'None':
           groups = data[group].unique()
           selected_group = st.selectbox('Group', groups, key=model.id)
-          y_cap = model.model.predict(X, selected_group)
+          y_cap = model.model.predict(X)
           st.pyplot(plot_avm(range(len(Y[data[group]==selected_group])) if time=='None' else pd.to_datetime(data[data[group]==selected_group][time]), Y[data[group]==selected_group], y_cap[data[group]==selected_group], model.model.fitted_model.resid[data[group]==selected_group]))
         #st.pyplot(plot_avm(range(len(Y)) if time=='None' else time, Y, y_cap, fitted_model.resid))
     #with st.expander("Residual Plot"):
-        y_cap = model.model.predict(X, selected_group)
+        y_cap = model.model.predict(X)
         st.pyplot(plot_resid(model.model.fitted_model, y_cap))
           
         

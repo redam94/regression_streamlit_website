@@ -13,7 +13,7 @@ class MixedEffects(BaseModel):
     return self
   
   def predict(self, X):
-    return self.model.predict(params=self.params, exog=X)
+    return self.fitted_model.predict(exog=X)
   
   def summary(self):
     return self.fitted_model.summary()
