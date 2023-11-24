@@ -29,7 +29,10 @@ class TabularData:
         self.update_name()
 
     def _check_file_type(self):
-        return self.file.type
+        try:
+            return self.file.type
+        except AttributeError:
+            return 'text/' + self.file.name.split('.')[-1]
 
     def _infer_file_structure(self):
         if "mff" in self.file.name:

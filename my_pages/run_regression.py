@@ -96,15 +96,17 @@ def run_regression_app():
   
   X = transformed_data[x]
   Y = transformed_data[y]
+  group_data = None if group=='None' else data[group]
+  time_data = None if time=='None' else data[time]
+  
   if intercept:
     X = sm.add_constant(X)
-    
   if d:
     st.write('Regression Results:')
     
-    model = MixedEffects("test") #OLS('OLS')
+    model =OLS('OLS')
   
-    fitted_model = run_regression(X, Y, data[group], model)
+    fitted_model = model.fit(X, Y, group=group_data, time=time_data)
     #st.write(fitted_model.summary())
     save_model(fitted_model, X, Y, transformation_details)
     #Get the predicted values of y from the fitted model
@@ -112,17 +114,18 @@ def run_regression_app():
       
   if 'fitted_model' in st.session_state:
     for i, model in enumerate(st.session_state.fitted_model[::-1]):
-      with st.expander(str(model.id)[:8] + f" BIC: {model.model.fitted_model.bic:.3f}" + f" Time: {model.time}", expanded=(i==0 and d)):
+      score_name, score = model.model.model_score()
+      with st.expander(str(model.id)[:8] + f" {score_name}: {score:.3f}" + f" Time: {model.time}"):
         st.write(model.time)
         st.write(model.model.summary())
         #with st.expander("AVM Plot"):
         X = model.ind
         Y = model.dep
         
-        if group == 'None':
-          st.pyplot(plot_avm(range(len(Y)) if time=='None' else pd.to_datetime(data[time]), Y, y_cap, model.model.fitted_model.resid))
-        if group != 'None':
-          groups = data[group].unique()
+        if model.model.group is None:
+          st.pyplot(model.model.plot_avm())
+        else:
+          groups = model.model.group.unique()
           selected_group = st.selectbox('Group', groups, key=model.id)
           y_cap = model.model.predict(X)
           st.pyplot(plot_avm(range(len(Y[data[group]==selected_group])) if time=='None' else pd.to_datetime(data[data[group]==selected_group][time]), Y[data[group]==selected_group], y_cap[data[group]==selected_group], model.model.fitted_model.resid[data[group]==selected_group]))
