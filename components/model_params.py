@@ -15,11 +15,11 @@ def select_variables(data):
   group = st.selectbox('Group', ['None']+list(data.columns))
   
   y = st.selectbox('Dependent Variable', data.columns)
-  x = st.multiselect('Independent Variable', data.columns)
+  x = st.multiselect('Independent Variable', [col for col in data.columns if col != y and col != time and col != group])
   
   test = pd.DataFrame(
   columns=TRANSFORM_DETAIL_COLUMNS, 
-    index=[y]+x if not x is None else [y],
+    index=list(set([y]+x)) if not x is None else [y],
   )
   if 'old_df' not in st.session_state:
     st.session_state['old_df'] = pd.DataFrame(
