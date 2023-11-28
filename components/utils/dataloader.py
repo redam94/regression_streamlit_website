@@ -20,6 +20,7 @@ def load_tabular_data():
 class TabularData:
 
     def __init__(self, file: io.BytesIO|None):
+        
         self._file = file
         self._file_type = self._check_file_type()
         self._file_structure = self._infer_file_structure()
@@ -27,6 +28,18 @@ class TabularData:
         self._name = None
         self.update_data()
         self.update_name()
+        
+    def __getattr__(self, name):
+        atter = getattr(self.data, name)
+        def method(*args, **kwargs):
+           
+            return atter(*args, **kwargs)
+        if callable(atter):
+            return method
+        else:
+            return atter
+    
+    
 
     def _check_file_type(self):
         try:
@@ -127,4 +140,13 @@ class TabularData:
         analytic_data = self.make_analytic(data)
 
         self._data = analytic_data
+        
+    def __getitem__(self, key):
+        return self.data[key]
 
+    def __setitem__(self, key, value):
+        self.data[key] = value
+    
+    def __repr__(self):
+        
+        return f"TabularData(name={self.name}, file_type={self.file_type}, file_structure={self.file_structure})"
