@@ -5,5 +5,5 @@ icon = "🏠"
 
 
 [[pages]]
-path = "my_pages/run_regression.py"
+path = "my_pages/model_page.py"
 name = "Analyze"
