@@ -2,7 +2,7 @@ from .constants import TRANSFORMS
 import streamlit as st
 from .transforms import linear
 
-@st.cache_data
+
 def transform_data(data, transform_df):
   transformed_data = data.copy()
   for col in data.columns:

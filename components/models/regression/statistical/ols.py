@@ -4,7 +4,10 @@ from ....models.basemodel import BaseModel
 import statsmodels.api as sm
 from typing import Optional
 import matplotlib.pyplot as plt
-
+import streamlit as st
+from ....utils.pipelines import transform_data
+from ....utils.constants import TRANSFORM_DETAIL_COLUMNS, COLUMN_SETTINGS
+from ....callbacks.data_frames import transform_df_callback
 
 class OLS(BaseModel):
   def __init__(self, name: str="OLS"):
@@ -16,25 +19,42 @@ class OLS(BaseModel):
     self.time = None
     self.group = None
     
-  def fit(self, 
-          X: pd.DataFrame|np.ndarray, 
-          y: pd.Series|pd.DataFrame|np.ndarray, 
-          time: Optional[pd.Series|np.ndarray] = None, 
-          group: Optional[pd.Series|np.ndarray|pd.DataFrame]=None, 
-          *args, **kwargs):
+  def fit(self):
     """
     Fit model to data
     """
-    
-    self.X_train = X
-    self.y_train = y
-    self.time = time
-    self.group = group
-    
-    self.model = self.model(self.y_train, self.X_train)
-    self.fitted_model = self.model.fit(*args, **kwargs)
-    
-    return self
+    self.fitted_model = self.model(self.y_train, self.X_train).fit()
+  
+  def set_params(self):
+    dep_var = st.selectbox('Dependent Variable', self.data.columns)
+    ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [dep_var]])
+    if dep_var is None or ind_var is None:
+      st.stop()
+    data_transforms = pd.DataFrame(
+    columns=TRANSFORM_DETAIL_COLUMNS, 
+      index=list(set([dep_var]+ind_var)) if not ind_var is None else [dep_var],
+    )
+    if 'old_df' not in st.session_state:
+      st.session_state['old_df'] = pd.DataFrame(
+        columns=TRANSFORM_DETAIL_COLUMNS,
+        index=self.data.columns,
+        data=[['Linear', 0.0, 0.0, 100.0, 0, 0.0] for _ in range(len(self.data.columns))])
+  
+    for row in data_transforms.index:
+      if row in st.session_state.old_df.index:
+        data_transforms.loc[row] = st.session_state.old_df.loc[row]
+      else:
+        data_transforms.loc[row] = ['Linear', 0.0, 0.0, 100.0, 0, 0.0]
+  
+        
+    data_transforms = st.data_editor(data_transforms, column_config=COLUMN_SETTINGS, 
+                                     on_change=transform_df_callback, args=(data_transforms,))
+    transform_df_callback(data_transforms)
+
+    self.X_train = self.data[ind_var]
+    self.y_train = self.data[dep_var]
+
+
   
   def predict(self, X: Optional[pd.DataFrame | np.ndarray] = None):
     """
@@ -105,3 +125,4 @@ class OLS(BaseModel):
     Return model score
     """
     return ("R2", self.fitted_model.rsquared)
+  

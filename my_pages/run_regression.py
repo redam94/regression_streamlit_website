@@ -75,7 +75,8 @@ def add_trend(data, time):
 def run_regression_app():
   # Define the user interface elements
   st.title('Regression App')
-  st.write('Enter the regression parameters:')
+  st.write('Choose Model')
+  
   
   
   with st.sidebar:
