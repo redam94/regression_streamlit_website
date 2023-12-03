@@ -5,7 +5,7 @@ import statsmodels.api as sm
 from typing import Optional
 import matplotlib.pyplot as plt
 import streamlit as st
-from ....utils.pipelines import transform_data
+from ....utils.pipelines import transform_data_element
 from ....utils.constants import TRANSFORM_DETAIL_COLUMNS, COLUMN_SETTINGS
 from ....callbacks.data_frames import transform_df_callback
 
@@ -26,34 +26,25 @@ class OLS(BaseModel):
     self.fitted_model = self.model(self.y_train, self.X_train).fit()
   
   def set_params(self):
-    dep_var = st.selectbox('Dependent Variable', self.data.columns)
-    ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [dep_var]])
+    columns = st.columns([.2, .8])
+    with columns[0]:
+      dep_var = st.selectbox('Dependent Variable', self.data.columns)
+    with columns[1]:
+      ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [dep_var]])
     if dep_var is None or ind_var is None:
       st.stop()
-    data_transforms = pd.DataFrame(
-    columns=TRANSFORM_DETAIL_COLUMNS, 
-      index=list(set([dep_var]+ind_var)) if not ind_var is None else [dep_var],
-    )
-    if 'old_df' not in st.session_state:
-      st.session_state['old_df'] = pd.DataFrame(
-        columns=TRANSFORM_DETAIL_COLUMNS,
-        index=self.data.columns,
-        data=[['Linear', 0.0, 0.0, 100.0, 0, 0.0] for _ in range(len(self.data.columns))])
-  
-    for row in data_transforms.index:
-      if row in st.session_state.old_df.index:
-        data_transforms.loc[row] = st.session_state.old_df.loc[row]
-      else:
-        data_transforms.loc[row] = ['Linear', 0.0, 0.0, 100.0, 0, 0.0]
-  
-        
-    data_transforms = st.data_editor(data_transforms, column_config=COLUMN_SETTINGS, 
-                                     on_change=transform_df_callback, args=(data_transforms,))
-    transform_df_callback(data_transforms)
+    self.regression_data = self.data[[dep_var] + ind_var].copy()
 
-    self.X_train = self.data[ind_var]
-    self.y_train = self.data[dep_var]
+    self.regression_data = transform_data_element(dep_var, ind_var, self.regression_data)
 
+    self.X_train = self.regression_data[ind_var]
+    self.y_train = self.regression_data[dep_var]
+
+  def plot_transforms(self):
+    self._scatter_data(self.regression_data, name='Transformed Data')
+  
+  def plot_raw(self):
+    self._scatter_data(self.data, name='Raw Data')
 
   
   def predict(self, X: Optional[pd.DataFrame | np.ndarray] = None):

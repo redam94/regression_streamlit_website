@@ -12,6 +12,7 @@ def main():
   model_type = st.selectbox('Model Type', ['None'] + list(IMPLEMENTED_MODELS.keys()))
 
   if model_type == 'None':
+    del st.session_state['old_df']
     st.stop()
   
   model = IMPLEMENTED_MODELS[model_type](name=model_type)
@@ -19,11 +20,11 @@ def main():
   
   model.upload_data()
   
-  if model.data is None:
-    st.stop()
-  
+  model.show_sample(10)
+  model.data_info()
+  model.plot_raw()
   model.set_params()
-
+  model.plot_transforms()
 
 if __name__ == '__main__':
   main()
