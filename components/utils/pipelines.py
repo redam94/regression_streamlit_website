@@ -16,12 +16,13 @@ def transform_data(data, transform_df):
     
   return transformed_data
 
+
 def transform_data_element(dep_var:str|list[str], ind_var:list[str], data:pd.DataFrame|TabularData) -> pd.DataFrame:
   data_transforms = pd.DataFrame(
       columns=TRANSFORM_DETAIL_COLUMNS, 
       index=list(set([dep_var]+ind_var)) if not ind_var is None else [dep_var],
     )
-  if 'old_df' not in st.session_state:
+  if not 'old_df' in st.session_state:
     st.session_state['old_df'] = pd.DataFrame(
       columns=TRANSFORM_DETAIL_COLUMNS,
       index=data.columns,
@@ -33,9 +34,7 @@ def transform_data_element(dep_var:str|list[str], ind_var:list[str], data:pd.Dat
     else:
       data_transforms.loc[row] = ['Linear', 0.0, 0.0, 100.0, 0, 0.0]
   
-        
-  data_transforms = st.data_editor(data_transforms, column_config=COLUMN_SETTINGS)
+  data_transforms = st.data_editor(data_transforms, column_config=COLUMN_SETTINGS, key='data_transforms')
   transform_df_callback(data_transforms)
- 
-  transformed_data = transform_data(data, data_transforms)
-  return transformed_data
+
+  return data_transforms
