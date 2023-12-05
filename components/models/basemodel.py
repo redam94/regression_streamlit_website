@@ -3,15 +3,19 @@ import numpy as np
 import matplotlib as mpl
 from typing import Optional
 import streamlit as st
+from streamlit import session_state as state
 from ..utils.dataloader import TabularData
 
 
 class BaseModel:
+  description: str = 'No description provided'
+
   def __init__(self, name: str):
     self.name = name
     self.fitted_model = None
     self.regression_data = None
     self.data = None
+    self.transform_df = None
     
   def save(self):
     pass
@@ -26,6 +30,12 @@ class BaseModel:
     if self.fitted_model is None:
       raise ValueError('Model has not been fitted yet')
     
+  def plot_raw(self):
+    pass
+
+  def plot_transforms(self):
+    pass
+
   def plot_avm(self, X: pd.DataFrame|np.ndarray, *args) -> mpl.figure.Figure:
     pass
   

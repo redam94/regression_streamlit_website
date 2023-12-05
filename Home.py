@@ -71,7 +71,18 @@ def get_clients():
     client_list = list_of_dirs(client_dirs)
 
   return client_list
-    
+
+def get_projects():
+  selected_org = st.session_state['org']
+  selected_client = st.session_state['client']
+  if selected_org is None or selected_client is None:
+    return []
+  else:
+    project_dirs = conn.fs.listdir(f'regressions_app_filestore/{selected_org}/{selected_client}')
+    project_list = list_of_dirs(project_dirs)
+  return project_list
+
+
 def initialize_session_state():
   if 'client' not in st.session_state:
     st.session_state['client'] = None
@@ -101,7 +112,7 @@ def main_page():
   with cols[1]:
     st.selectbox('Client', get_clients(), index=None, key='client')
 
-  st.selectbox('Project', [], index=None, key='project')
+  st.selectbox('Project', get_projects(), index=None, key='project')
   
   st.button("Create New Project", on_click=create_project)
   if st.session_state.project_warning:
