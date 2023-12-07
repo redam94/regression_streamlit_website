@@ -1,4 +1,5 @@
 **/.vscode/
 **/__pycache__/
 **/notebooks/
-secrets.toml
+secrets.tomls
+**/secrets.toml
