@@ -30,6 +30,8 @@ class TabularData:
         self.update_name()
         
     def __getattr__(self, name):
+        if self.data is None:
+            st.stop()
         atter = getattr(self.data, name)
         def method(*args, **kwargs):
            
@@ -88,23 +90,26 @@ class TabularData:
         raise AttributeError("Cannot set file structure")
 
     def load_data(self):
-
-        if self.file is None:
-            return None
+        try:
+            if self.file is None:
+                return None
 
         
-        if self.file_type == 'text/xlsx':
-            data = pd.read_excel(self.file)
-        elif self.file_type == 'text/csv':
-            data = pd.read_csv(self.file)
-        elif self.file_type == 'text/txt':
-            data = pd.read_csv(self.file, sep='\t')
-        else:
-            raise ValueError("File type not recognized")
+            if self.file_type == 'text/xlsx':
+                data = pd.read_excel(self.file)
+            elif self.file_type == 'text/csv':
+                data = pd.read_csv(self.file)
+            elif self.file_type == 'text/txt':
+                data = pd.read_csv(self.file, sep='\t')
+            else:
+                raise ValueError("File type not recognized")
+        except Exception as e:
+            return None
+        
         return data
 
     def make_analytic(self, data):
-        if self.file_structure == 'mff':
+        if self.file_structure == 'mff' and data is not None:
             analytic_data = data.pivot_table(
                 index=[
                     'Geography', 'Period', 
