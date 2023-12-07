@@ -1,0 +1,74 @@
+version: '3.3'
+
+services:
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    environment:
+      - DEFAULT_PROVIDER=oidc
+      - PROVIDERS_OIDC_ISSUER_URL=https://${KEYCLOAK_DOMAIN?Variable not set}/auth/realms/master
+      - PROVIDERS_OIDC_CLIENT_ID=${AUTH_CLIENT_ID?Variable not set}
+      - PROVIDERS_OIDC_CLIENT_SECRET=${AUTH_CLIENT_SECRET?Variable not set}
+      - SECRET=change_to_a_random_string
+      # INSECURE_COOKIE is required if not using a https entrypoint
+      # - INSECURE_COOKIE=true
+      - LOG_LEVEL=debug
+    networks:
+      - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+           - node.role==manager
+      labels:
+        - "traefik.enable=true" # enable traefik
+        - "traefik.docker.network=traefik-public" # put it in the same network as traefik
+        - "traefik.constraint-label=traefik-public" # assign the same label as traefik so it can be discovered
+        - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
+        - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
+        - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"
+        # receive the authentication results from Keycloak
+        - "traefik.http.routers.forward-auth.rule=Host(`auth.${APP_DOMAIN?Variable not set}`)"
+        - "traefik.http.routers.forward-auth.service=traefik-forward-auth"
+
+  stapp:
+    image: streamlitapp_clean
+    depends_on:
+      - traefik-forward-auth
+    ports:
+      - 8501
+    networks:
+      - traefik-public
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      # Use below if only place the app on workers
+      # placement:
+      #   constraints:
+      #     - node.role==worker
+      labels:
+        - "traefik.enable=true" # enable traefik
+        - "traefik.docker.network=traefik-public" # put it in the same network as traefik
+        - "traefik.constraint-label=traefik-public" # assign the same label as traefik so it can be discovered
+        - "traefik.http.routers.stapp.rule=Host(`${APP_DOMAIN?Variable not set}`)"
+        - "traefik.http.routers.stapp.entrypoints=http"
+        # redirect HTTP to HTTPS and add SSL certificate
+        - "traefik.http.middlewares.stapp-https-redirect.redirectscheme.scheme=https" # redirect traffic to https
+        - "traefik.http.middlewares.stapp-https-redirect.redirectscheme.permanent=true" # redirect traffic to https
+        - "traefik.http.routers.stapp-secured.rule=Host(`${APP_DOMAIN?Variable not set}`)" # listen to port 443 for request to APP_DOMAIN (use together with the line below)
+        - "traefik.http.routers.stapp-secured.entrypoints=https"
+        - "traefik.http.routers.stapp-secured.tls.certresolver=le" # use the Let's Encrypt certificate we set up earlier
+        # assign app service
+        - "traefik.http.routers.stapp-secured.service=stapp"
+        - "traefik.http.routers.stapp-secured.middlewares=stapp-auth@docker"
+        # redirect to Keycloak for authentication
+        - "traefik.http.middlewares.stapp-auth.forwardauth.address=http://traefik-forward-auth:4181"
+        - "traefik.http.middlewares.stapp-auth.forwardauth.authresponseheaders=X-Forwarded-User"
+        - "traefik.http.services.stapp.loadbalancer.server.port=8501"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  traefik-public:
+    external: true

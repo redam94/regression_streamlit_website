@@ -1,0 +1,15 @@
+[[pages]]
+path = "Home.py"
+name = "Home"
+icon = "🏠"
+
+
+[[pages]]
+path = "my_pages/model_page.py"
+name = "Experiment"
+icon = "🔬"
+
+[[pages]]
+path = "my_pages/saved_model.py"
+name = "Saved Experiments"
+icon = "💾"
