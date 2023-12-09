@@ -32,7 +32,10 @@ services:
         - "traefik.http.routers.forward-auth.service=traefik-forward-auth"
 
   stapp:
-    image: streamlitapp_clean
+    image: redam94/regression:updated
+    secrets:
+      - source: secret_key
+        target: /app/.streamlit/secrets.toml
     depends_on:
       - traefik-forward-auth
     ports:
@@ -68,7 +71,9 @@ services:
         - "traefik.http.services.stapp.loadbalancer.server.port=8501"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-
+secrets:
+  secret_key:
+    file: ./secrets.toml
 networks:
   traefik-public:
     external: true
