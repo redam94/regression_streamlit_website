@@ -10,6 +10,7 @@ class MixedEffects(BaseModel):
     super().__init__(name)
     self.model = sm.MixedLM
     self.fitted_model = None
+    self.ind_var = None
   
   def fit(self):
     """
@@ -24,19 +25,19 @@ class MixedEffects(BaseModel):
     with columns[0]:
       dep_var = st.selectbox('Dependent Variable', self.data.columns)
     with columns[1]:
-      ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [dep_var]])
+      self.ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [dep_var]], default=self.ind_var if self.ind_var is not None else [None])
       self.intercept = st.checkbox('Intercept', value=True)
-    if dep_var is None or ind_var is None:
+    if dep_var is None or self.ind_var is None:
       st.stop()
-    self.regression_data = self.data[[dep_var] + ind_var].copy()
+    self.regression_data = self.data[[dep_var] + self.ind_var].copy()
 
-    transform_df = transform_data_element(dep_var, ind_var, self.data)
+    transform_df = transform_data_element(dep_var, self.ind_var, self.data)
 
     self.transform_df = transform_df.copy()
 
     self.regression_data = transform_data(self.regression_data, self.transform_df)
 
-    self.X_train = self.regression_data[ind_var]
+    self.X_train = self.regression_data[self.ind_var]
     self.y_train = self.regression_data[dep_var]
 
     if self.intercept:

@@ -28,6 +28,8 @@ class OLS(BaseModel):
     self.X_train = None
     self.y_train = None
     self.intercept = False
+    self.dep_var = None
+    self.ind_var = None
     
   def fit(self):
     """
@@ -40,22 +42,26 @@ class OLS(BaseModel):
   def set_params(self):
     columns = st.columns([.2, .8])
     with columns[0]:
-      dep_var = st.selectbox('Dependent Variable', self.data.columns)
+      dep_var = st.selectbox('Dependent Variable', self.data.columns, index=list(self.data.columns).index(self.dep_var) if self.dep_var is not None else 0)
+      self.dep_var = dep_var
     with columns[1]:
-      ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [dep_var]])
+      defaults = [col for col in self.ind_var if col != self.dep_var] if self.ind_var is not None else None
+      #defaults = [col for col in defaults if col in self.data.columns and col != self.dep_var]
+      ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [self.dep_var]], default=defaults)
+      self.ind_var = ind_var
       self.intercept = st.checkbox('Intercept', value=True)
-    if dep_var is None or ind_var is None:
+    if self.dep_var is None or self.ind_var is None:
       st.stop()
-    self.regression_data = self.data[[dep_var] + ind_var].copy()
+    self.regression_data = self.data[[self.dep_var] + self.ind_var].copy()
 
-    transform_df = transform_data_element(dep_var, ind_var, self.data)
+    transform_df = transform_data_element(self.dep_var, self.ind_var, self.data)
 
     self.transform_df = transform_df.copy()
 
     self.regression_data = transform_data(self.regression_data, self.transform_df)
 
-    self.X_train = self.regression_data.drop(columns=[dep_var])
-    self.y_train = self.regression_data[dep_var]
+    self.X_train = self.regression_data.drop(columns=[self.dep_var])
+    self.y_train = self.regression_data[self.dep_var]
 
     if self.intercept:
       self.X_train = sm.add_constant(self.X_train)
@@ -106,17 +112,24 @@ class OLS(BaseModel):
       period = range(len(model_output))
     
       
-    fig, ax = plt.subplots(1, figsize=(16, 9))
+    fig, ax = plt.subplots(2, figsize=(16, 18))
     if group is None:
-      ax.plot(period, model_output, color='blue', label='Model')
-      ax.plot(period, actual, color='k', label='Actual')
-      ax.plot(period, residual, 'o', color='red', label='Residual')
+      ax[0].plot(period, model_output, color='blue', label='Model')
+      ax[0].plot(period, actual, color='k', label='Actual')
+      ax[1].plot(period, residual, 'o', color='red', label='Residual')
       
     else:
-      ax.plot(period[group==selected_group], model_output[group==selected_group], color='blue', label='Model')
-      ax.plot(period[group==selected_group], actual[group==selected_group], color='k', label='Actual')
-      ax.plot(period[group==selected_group], residual[group==selected_group], 'o', color='red', label='Residual')
-    
+      ax[0].plot(period[group==selected_group], model_output[group==selected_group], color='blue', label='Model')
+      ax[0].plot(period[group==selected_group], actual[group==selected_group], color='k', label='Actual')
+      ax[1].plot(period[group==selected_group], residual[group==selected_group], 'o', color='red', label='Residual')
+    ax[0].legend()
+    ax[1].legend()
+    ax[0].set_title('Actual vs Model')
+    ax[1].set_title('Residual')
+    ax[0].set_xlabel('Period')
+    ax[1].set_xlabel('Period')
+    ax[0].set_ylabel(self.dep_var)
+    ax[1].set_ylabel('Residual')
     return fig
   
   def plot_residual(self, period: Optional[list[float]|np.ndarray|pd.DataFrame|pd.Series] = None):
