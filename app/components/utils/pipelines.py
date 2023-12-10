@@ -12,7 +12,12 @@ def transform_data(data, transform_df):
   for col in data.columns:
     
     row = transform_df.loc[col].to_dict()
-    transformed_data[col] = TRANSFORMS.get(row['transformation'], linear)(data[col], **row)
+    transformed_col = TRANSFORMS.get(row['transformation'], linear)(data[col], **row)
+    if transformed_col.shape == data[col].shape:
+      transformed_data[col] = transformed_col
+    else:
+      transformed_data[transformed_col.columns] = transformed_col.astype(float)
+      transformed_data.drop(columns=[col], inplace=True)
     
   return transformed_data
 

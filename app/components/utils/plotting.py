@@ -49,4 +49,22 @@ def plot_transfromed_data(transformed_data: pd.DataFrame, data: pd.DataFrame, x:
   with st.expander('Transformations'):
     st.pyplot(fig)
   
-  
+def scatter_data(data:pd.DataFrame, name: str = 'Scatter Plot'):
+  if data is None:
+    return
+    
+  with st.expander(name, expanded=False):
+    columns = st.columns(2)
+    with columns[0]:
+      y = st.selectbox('Y', data.columns, key=f"{name}_y")
+      logy = st.checkbox('Log Y', key=f"{name}_logy")
+    with columns[1]:
+      x = st.selectbox('X', data.columns, key=f"{name}_x")
+      logx = st.checkbox('Log X', key=f"{name}_logx")
+      
+      
+    color = st.selectbox('Color', [None] + list(data.columns), key=f"{name}_color")
+    fig, ax = plt.subplots(1, figsize=(10, 5))
+    data.plot(x=x, y=y, color=data[color] if color is not None else None, kind='scatter', ax=ax, logy=logy, logx=logx)
+      
+    st.pyplot(fig)

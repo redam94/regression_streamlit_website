@@ -8,6 +8,7 @@ import streamlit as st
 from ....utils.pipelines import transform_data_element, transform_data
 from ....utils.constants import TRANSFORM_DETAIL_COLUMNS, COLUMN_SETTINGS
 from ....callbacks.data_frames import transform_df_callback
+from ....utils.plotting import scatter_data
 
 class OLS(BaseModel):
   description = """
@@ -19,8 +20,9 @@ class OLS(BaseModel):
   - The independent variables are uncorrelated with the error term (may not be true for time series data or panel data see [here](https://timeseriesreasoning.com/contents/pooled-ols-regression-models-for-panel-data-sets/))
   - Normality of the error term
   """
-  def __init__(self, name: str="OLS"):
-    super().__init__(name)
+  def __init__(self, name: str="OLS", data=None):
+    super().__init__(name, data)
+
     self.model = sm.OLS
     self.fitted_model = None
     self.X_train = None
@@ -52,7 +54,7 @@ class OLS(BaseModel):
 
     self.regression_data = transform_data(self.regression_data, self.transform_df)
 
-    self.X_train = self.regression_data[ind_var]
+    self.X_train = self.regression_data.drop(columns=[dep_var])
     self.y_train = self.regression_data[dep_var]
 
     if self.intercept:
@@ -61,12 +63,12 @@ class OLS(BaseModel):
   def plot_transforms(self):
 
     transformed_data = self.regression_data.copy()
-    transformed_data.rename(columns={col: f"{self.transform_df.loc[col]['transformation']}({col})" for col in transformed_data.columns}, inplace=True)
-    data = self.data[self.regression_data.columns].copy().join(transformed_data)
-    self._scatter_data(data, name='Transformed Data')
+    transformed_data.rename(columns={col: f"{self.transform_df.loc[col]['transformation']}({col})" for col in transformed_data.columns if col in self.transform_df.index}, inplace=True)
+    data = self.data.copy().join(transformed_data)
+    scatter_data(data, name='Transformed Data')
   
   def plot_raw(self):
-    self._scatter_data(self.data, name='Raw Data')
+    scatter_data(self.data, name='Raw Data')
 
   
   def predict(self, X: Optional[pd.DataFrame | np.ndarray] = None):

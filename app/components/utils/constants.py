@@ -1,4 +1,4 @@
-from .transforms import weibull, log, logit, logp1, expit, linear
+from .transforms import weibull, log, logit, logp1, expit, linear, one_hot_encode
 import streamlit as st
 
 TRANSFORMS = {
@@ -7,7 +7,8 @@ TRANSFORMS = {
   "Log": log,
   "Logp1": logp1,
   "Logit":logit,
-  "Expit":expit}
+  "Expit":expit,
+  "One Hot Encode": one_hot_encode}
 
 TRANSFORM_DETAIL_COLUMNS = [
   'transformation',
@@ -31,7 +32,7 @@ OPTIONS = TRANSFORMS.keys()
 COLUMN_SETTINGS = {
   'transformation': st.column_config.SelectboxColumn("transformation",
     default='Linear', 
-    options=['Linear', 'Weibull', 'Log', 'Logp1', 'Logit', 'Expit'],
+    options=TRANSFORMS.keys(),
     required=True
     ),
   'alpha': st.column_config.NumberColumn(default=0.0),

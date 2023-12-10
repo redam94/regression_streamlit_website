@@ -1,1 +1,1 @@
-from .tabular_data import MFF, Wide
+from .tabular_data import MFF, Wide, TabularDataBase

@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import io
-
+from ...utils.plotting import scatter_data
 class TabularDataBase:
   
   def __init__(self, file: io.BytesIO|None):
@@ -46,6 +46,9 @@ class TabularDataBase:
       return self.file.type
     except AttributeError:
       return 'text/' + self.file.name.split('.')[-1]
+    
+  def plot_raw(self):
+    scatter_data(self.data, name='Raw Data')
     
   @property
   def name(self):
