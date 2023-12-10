@@ -70,10 +70,8 @@ def main():
  
   if ss.model.data is None:
     st.stop()
-
   ss.model.set_params()
   ss.model.plot_transforms()
-
   st.button('Fit Model', on_click=fit_model_callback)
     
   if ss.model.fitted_model is None:
