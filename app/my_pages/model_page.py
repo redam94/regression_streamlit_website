@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from uuid import uuid4
 from components.models import IMPLEMENTED_MODELS
-from components.datamodels.model import SaveModel
+from components.datamodels import SaveModel
 from streamlit import session_state as ss
 
 def save_model(fitted_model, x, y, transformation_details):
@@ -19,25 +19,24 @@ def save_model(fitted_model, x, y, transformation_details):
     #}]
     ss['fitted_model_list'] = [
       SaveModel(model=fitted_model, 
-                ind=x, 
-                dep=y, 
-                transformation_details=transformation_details, 
                 time=pd.Timestamp.now(), 
                 id=uuid4())
     ]
     return
   ss['fitted_model_list'].append(
-    SaveModel(model=fitted_model, 
-                ind=x, 
-                dep=y, 
-                transformation_details=transformation_details, 
+    SaveModel(model=fitted_model,
                 time=pd.Timestamp.now(), 
                 id=uuid4())
   )
 
 def model_type_callback():
   ss['model_type'] = st.session_state.model_type
-  ss['model'] = IMPLEMENTED_MODELS[ss.model_type](name='')
+  if 'tabular_data' not in ss.keys() or ss.tabular_data is None:
+    ss['tabular_data'] = None
+  ss['model'] = IMPLEMENTED_MODELS[ss.model_type](name='', data=ss.tabular_data)
+def change_model_type_callback():
+  ss['model_type'] = 'None'
+  ss['model'] = None
   
 def fit_model_callback():
   ss.model.fit()
@@ -55,8 +54,10 @@ def main():
   st.title('Model Page')
   
   default_index = MODEL_OPTIONS.index(ss.model_type) if ss.model_type in MODEL_OPTIONS else 0
-  model_type = st.selectbox('Select a model type', MODEL_OPTIONS, index=default_index, key='model_type', on_change=model_type_callback)
-  
+  if ss.model_type is 'None':
+    model_type = st.selectbox('Select a model type', MODEL_OPTIONS, index=default_index, key='model_type', on_change=model_type_callback)
+  else:
+    st.button('Change Model', on_click=change_model_type_callback)
   
   if ss.model is None:
     st.stop()
@@ -66,13 +67,13 @@ def main():
   st.markdown(ss.model.description)
   st.title(ss.model.name)
 
-  ss.model.upload_data()
+ 
   if ss.model.data is None:
     st.stop()
   
-  ss.model.show_sample(10)
-  ss.model.data_info()
-  ss.model.plot_raw()
+  #ss.model.show_sample(10)
+  #ss.model.data_info()
+  #ss.model.plot_raw()
   ss.model.set_params()
   ss.model.plot_transforms()
 
