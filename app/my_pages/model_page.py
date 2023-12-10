@@ -70,10 +70,7 @@ def main():
  
   if ss.model.data is None:
     st.stop()
-  
-  #ss.model.show_sample(10)
-  #ss.model.data_info()
-  #ss.model.plot_raw()
+
   ss.model.set_params()
   ss.model.plot_transforms()
 
