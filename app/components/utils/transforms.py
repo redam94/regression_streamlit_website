@@ -27,5 +27,5 @@ def linear(x, **kwargs) -> np.ndarray:
   return x
 
 def one_hot_encode(data: pd.DataFrame, **kwargs) -> pd.DataFrame:
-  return pd.get_dummies(data, drop_first=True, prefix='OHE_dummy')
+  return pd.get_dummies(data, drop_first=True, prefix='OHE')
 
