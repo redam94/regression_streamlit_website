@@ -10,6 +10,7 @@ def main():
         st.divider()
         st.write("Data Transformation Details")
         st.write(model.model.transform_df)
+        st.pyplot(model.model.plot_avm())
   
 
 if __name__ == '__main__':

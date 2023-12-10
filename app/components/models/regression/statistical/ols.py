@@ -94,7 +94,7 @@ class OLS(BaseModel):
     
     return self.fitted_model.summary()
   
-  def plot_avm(self, group: Optional[pd.Series|np.ndarray|pd.DataFrame]=None):
+  def plot_avm(self,period = None, group: Optional[pd.Series|np.ndarray|pd.DataFrame]=None, selected_group: Optional[str]=None):
     """
     Plot actual vs model
     """
@@ -102,21 +102,20 @@ class OLS(BaseModel):
     actual = self.y_train
     residual = self.fitted_model.resid
     
-    if self.time is None:
+    if period is None:
       period = range(len(model_output))
-    else:
-      period = self.time
+    
       
     fig, ax = plt.subplots(1, figsize=(16, 9))
-    if self.group is None:
+    if group is None:
       ax.plot(period, model_output, color='blue', label='Model')
       ax.plot(period, actual, color='k', label='Actual')
       ax.plot(period, residual, 'o', color='red', label='Residual')
       
     else:
-      ax.plot(period[self.group==group], model_output[self.group==group], color='blue', label='Model')
-      ax.plot(period[self.group==group], actual[self.group==group], color='k', label='Actual')
-      ax.plot(period[self.group==group], residual[self.group==group], 'o', color='red', label='Residual')
+      ax.plot(period[group==selected_group], model_output[group==selected_group], color='blue', label='Model')
+      ax.plot(period[group==selected_group], actual[group==selected_group], color='k', label='Actual')
+      ax.plot(period[group==selected_group], residual[group==selected_group], 'o', color='red', label='Residual')
     
     return fig
   

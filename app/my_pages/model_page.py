@@ -82,7 +82,6 @@ def main():
   if ss.model.fitted_model is None:
     st.stop()
   
-  
   st.write(ss.model.summary())
 
 
