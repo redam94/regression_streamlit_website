@@ -3,6 +3,7 @@ from st_pages import show_pages_from_config, add_page_title
 from components.utils.connections import conn
 from st_files_connection import FilesConnection
 from pydantic import BaseModel
+from gcsfs.retry import HttpError
 
 class ProjectForm:
   orginazation: str
@@ -126,8 +127,17 @@ def main_page():
 
 if __name__ == '__main__':
   show_pages_from_config()
-  initialize_session_state()
-  if not st.session_state.show_project_creation_form or st.session_state.client is None or st.session_state.org is None:
-    main_page()
-  else:
-    project_creation_form(st.session_state.org, st.session_state.client)
+  try:
+    initialize_session_state()
+    if not st.session_state.show_project_creation_form or st.session_state.client is None or st.session_state.org is None:
+      main_page()
+    else:
+      project_creation_form(st.session_state.org, st.session_state.client)
+  except HttpError as e:
+    st.error("""
+             ## Warning: 
+             Could not connect to filestore. Please check your connection settings.\n
+             Or your user may not have access to the filestore. Please contact your administrator.\n
+             The app will not use the filestore and will not be able to save or load data. However, you can still use the app.
+             """)
+    st.stop()

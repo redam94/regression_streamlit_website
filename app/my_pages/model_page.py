@@ -19,18 +19,12 @@ def save_model(fitted_model, x, y, transformation_details):
     #}]
     ss['fitted_model_list'] = [
       SaveModel(model=fitted_model, 
-                ind=x, 
-                dep=y, 
-                transformation_details=transformation_details, 
                 time=pd.Timestamp.now(), 
                 id=uuid4())
     ]
     return
   ss['fitted_model_list'].append(
-    SaveModel(model=fitted_model, 
-                ind=x, 
-                dep=y, 
-                transformation_details=transformation_details, 
+    SaveModel(model=fitted_model,
                 time=pd.Timestamp.now(), 
                 id=uuid4())
   )
