@@ -20,6 +20,17 @@ class OLS(BaseModel):
   - The independent variables are uncorrelated with the error term (may not be true for time series data or panel data see [here](https://timeseriesreasoning.com/contents/pooled-ols-regression-models-for-panel-data-sets/))
   - Normality of the error term
   """
+  model_help = """
+  ## OLS Model
+  ### This model uses statsmodels.api.OLS to fit a linear regression model to the data.
+  Instructions: 
+  1. Unzip the data file
+  2. Pickle load the model you made need to install the following packages:
+  - statsmodels
+  - pandas
+  - numpy
+  3. load the regression data csv file
+  """
   def __init__(self, name: str="OLS", data=None):
     super().__init__(name, data)
 
@@ -158,3 +169,33 @@ class OLS(BaseModel):
     for key, value in self.__dict__.items():
       new_copy.__dict__[key] = value
     return new_copy
+
+  def save_model(self, name: str):
+    """
+    Save model to file
+    """
+    import zipfile
+    import io
+    import pickle
+    
+    temp_file = io.BytesIO()
+    with zipfile.ZipFile(
+        temp_file, "w", zipfile.ZIP_DEFLATED
+    ) as temp_file_opened:
+            # add csv files each library
+            temp_file_opened.writestr(f"model.pkl", pickle.dumps(self.fitted_model))
+            temp_file_opened.writestr(f"regression_data.csv", self.regression_data.to_csv(index=False))
+            temp_file_opened.writestr(f"transform_df.csv", self.transform_df.to_csv(index=True))
+            temp_file_opened.writestr(f"model_summary.txt", self.fitted_model.summary().as_text())
+            temp_file_opened.writestr(f"README.md", self.model_help)
+            
+    temp_file.seek(0)
+    
+    st.download_button(
+        label="Download Model",
+        data=temp_file,
+        file_name=f"{name}.zip",
+        mime="application/zip",
+    )
+            
+            
