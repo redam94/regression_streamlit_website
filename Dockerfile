@@ -1,14 +1,9 @@
-FROM python:3.11-slim
+FROM python:3.11
 
 # Copy all the files from the folders the Dockerfile is to the container app folder streamlit cannot run from root
 COPY ./app ./app
 WORKDIR /app
 # Install the modules specified in the requirements.txt
-RUN apk update && apk add python3-dev \
-                          gcc \
-                          libc-dev \
-                          libffi-dev
-                          
 RUN pip3 install -r requirements.txt
 
 # The port on which a container listens for connections
