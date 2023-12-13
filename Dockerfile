@@ -5,7 +5,7 @@ COPY ./app ./app
 WORKDIR /app
 # Install the modules specified in the requirements.txt
 RUN sudo apt install -y ninja-build \
-    pip3 install -r requirements.txt
+    && pip3 install -r requirements.txt
 
 # The port on which a container listens for connections
 EXPOSE 8501
