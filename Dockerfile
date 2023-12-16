@@ -1,4 +1,4 @@
-FROM python:3.8-buster
+FROM python:3.8
 
 # Copy all the files from the folders the Dockerfile is to the container app folder streamlit cannot run from root
 COPY ./app ./app
