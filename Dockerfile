@@ -4,10 +4,10 @@ FROM python:3.8
 COPY ./app ./app
 WORKDIR /app
 # Install the modules specified in the requirements.txt
-RUN sudo apt-get install cmake -y
-RUN pip install patchelf
-RUN pip install ninja
-RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y \
+   && pip install patchelf \
+   && pip install ninja \
+   && pip install -r requirements.txt
 
 # The port on which a container listens for connections
 EXPOSE 8501
