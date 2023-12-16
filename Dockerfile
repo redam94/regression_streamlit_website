@@ -4,7 +4,6 @@ FROM python:3.11
 COPY ./app ./app
 WORKDIR /app
 # Install the modules specified in the requirements.txt
-RUN apt install -y ninja-build
 RUN pip3 install -r requirements.txt
 
 # The port on which a container listens for connections

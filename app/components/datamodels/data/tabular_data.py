@@ -2,10 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import io
+from typing import Optional
 from ...utils.plotting import scatter_data
 class TabularDataBase:
   
-  def __init__(self, file: io.BytesIO|None):
+  def __init__(self, file: Optional[io.BytesIO] = None):
     self._file = file
     self._file_type = self._check_file_type()
     self._data = None
@@ -63,7 +64,7 @@ class TabularDataBase:
       return
     self._name = self.file.name
 
-  def set_file(self, file: io.BytesIO|None):
+  def set_file(self, file: Optional[io.BytesIO] = None):
     self._file = file
     self._file_type = self._check_file_type()
     self.update_data()
@@ -118,7 +119,7 @@ class TabularDataBase:
 
 class MFF(TabularDataBase):
 
-    def __init__(self, file: io.BytesIO|None):
+    def __init__(self, file: Optional[io.BytesIO] = None):
         super().__init__(file)
 
     def make_analytic(self, data):
@@ -143,10 +144,10 @@ class MFF(TabularDataBase):
         data = self.load_data()
         analytic_data = self.make_analytic(data)
         self._data = analytic_data
-        
+      
 class Wide(TabularDataBase):
   
-  def __init__(self, file: io.BytesIO|None):
+  def __init__(self, file: Optional[io.BytesIO] = None):
     super().__init__(file)
     
   
