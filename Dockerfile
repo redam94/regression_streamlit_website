@@ -5,7 +5,7 @@ COPY ./app ./app
 WORKDIR /app
 # Install the modules specified in the requirements.txt
 RUN apt-get update && apt-get install -y \
-   && apt-get install -y cmake build-essential gcc gfortran\
+   && apt-get install -y cmake build-essential gcc gfortran libopenblas-dev\
    && pip install patchelf \
    && pip install ninja \
    && pip install -r requirements.txt
