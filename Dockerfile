@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.11
 
 # Copy all the files from the folders the Dockerfile is to the container app folder streamlit cannot run from root
 COPY ./app ./app
