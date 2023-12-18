@@ -1,2 +1,2 @@
-from .mixed_effects import MixedEffects
+from .mixed_effects import MixedEffects, FixedEffects
 from .ols import OLS

@@ -6,5 +6,6 @@ from .basemodel import BaseModel
 IMPLEMENTED_MODELS = {
   'None': BaseModel,
   'OLS': stat.OLS,
-  'Fixed Effects': stat.MixedEffects,
+  'Fixed Effects': stat.FixedEffects,
+  'Mixed Effects': stat.MixedEffects,
 }

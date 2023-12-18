@@ -20,6 +20,17 @@ class OLS(BaseModel):
   - The independent variables are uncorrelated with the error term (may not be true for time series data or panel data see [here](https://timeseriesreasoning.com/contents/pooled-ols-regression-models-for-panel-data-sets/))
   - Normality of the error term
   """
+  model_help = """
+  ## OLS Model
+  ### This model uses statsmodels.api.OLS to fit a linear regression model to the data.
+  Instructions: 
+  1. Unzip the data file
+  2. Pickle load the model you made need to install the following packages:
+  - statsmodels
+  - pandas
+  - numpy
+  3. load the regression data csv file
+  """
   def __init__(self, name: str="OLS", data=None):
     super().__init__(name, data)
 
@@ -28,6 +39,8 @@ class OLS(BaseModel):
     self.X_train = None
     self.y_train = None
     self.intercept = False
+    self.dep_var = None
+    self.ind_var = None
     
   def fit(self):
     """
@@ -40,22 +53,26 @@ class OLS(BaseModel):
   def set_params(self):
     columns = st.columns([.2, .8])
     with columns[0]:
-      dep_var = st.selectbox('Dependent Variable', self.data.columns)
+      dep_var = st.selectbox('Dependent Variable', self.data.columns, index=list(self.data.columns).index(self.dep_var) if self.dep_var is not None else 0)
+      self.dep_var = dep_var
     with columns[1]:
-      ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [dep_var]])
+      defaults = [col for col in self.ind_var if col != self.dep_var] if self.ind_var is not None else None
+      #defaults = [col for col in defaults if col in self.data.columns and col != self.dep_var]
+      ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [self.dep_var]], default=defaults)
+      self.ind_var = ind_var
       self.intercept = st.checkbox('Intercept', value=True)
-    if dep_var is None or ind_var is None:
+    if self.dep_var is None or self.ind_var is None:
       st.stop()
-    self.regression_data = self.data[[dep_var] + ind_var].copy()
+    self.regression_data = self.data[[self.dep_var] + self.ind_var].copy()
 
-    transform_df = transform_data_element(dep_var, ind_var, self.data)
+    transform_df = transform_data_element(self.dep_var, self.ind_var, self.data)
 
     self.transform_df = transform_df.copy()
 
     self.regression_data = transform_data(self.regression_data, self.transform_df)
 
-    self.X_train = self.regression_data.drop(columns=[dep_var])
-    self.y_train = self.regression_data[dep_var]
+    self.X_train = self.regression_data.drop(columns=[self.dep_var])
+    self.y_train = self.regression_data[self.dep_var]
 
     if self.intercept:
       self.X_train = sm.add_constant(self.X_train)
@@ -94,7 +111,7 @@ class OLS(BaseModel):
     
     return self.fitted_model.summary()
   
-  def plot_avm(self, group: Optional[pd.Series|np.ndarray|pd.DataFrame]=None):
+  def plot_avm(self,period = None, group: Optional[pd.Series|np.ndarray|pd.DataFrame]=None, selected_group: Optional[str]=None):
     """
     Plot actual vs model
     """
@@ -102,22 +119,28 @@ class OLS(BaseModel):
     actual = self.y_train
     residual = self.fitted_model.resid
     
-    if self.time is None:
+    if period is None:
       period = range(len(model_output))
-    else:
-      period = self.time
-      
-    fig, ax = plt.subplots(1, figsize=(16, 9))
-    if self.group is None:
-      ax.plot(period, model_output, color='blue', label='Model')
-      ax.plot(period, actual, color='k', label='Actual')
-      ax.plot(period, residual, 'o', color='red', label='Residual')
-      
-    else:
-      ax.plot(period[self.group==group], model_output[self.group==group], color='blue', label='Model')
-      ax.plot(period[self.group==group], actual[self.group==group], color='k', label='Actual')
-      ax.plot(period[self.group==group], residual[self.group==group], 'o', color='red', label='Residual')
     
+      
+    fig, ax = plt.subplots(2, figsize=(16, 18))
+    if group is None:
+      ax[0].plot(period, model_output, color='blue', label='Model')
+      ax[0].plot(period, actual, color='k', label='Actual')
+      ax[1].plot(period, residual, 'o', color='red', label='Residual')
+      
+    else:
+      ax[0].plot(period[group==selected_group], model_output[group==selected_group], color='blue', label='Model')
+      ax[0].plot(period[group==selected_group], actual[group==selected_group], color='k', label='Actual')
+      ax[1].plot(period[group==selected_group], residual[group==selected_group], 'o', color='red', label='Residual')
+    ax[0].legend()
+    ax[1].legend()
+    ax[0].set_title('Actual vs Model')
+    ax[1].set_title('Residual')
+    ax[0].set_xlabel('Period')
+    ax[1].set_xlabel('Period')
+    ax[0].set_ylabel(self.dep_var)
+    ax[1].set_ylabel('Residual')
     return fig
   
   def plot_residual(self, period: Optional[list[float]|np.ndarray|pd.DataFrame|pd.Series] = None):
@@ -146,3 +169,33 @@ class OLS(BaseModel):
     for key, value in self.__dict__.items():
       new_copy.__dict__[key] = value
     return new_copy
+
+  def save_model(self, name: str):
+    """
+    Save model to file
+    """
+    import zipfile
+    import io
+    import pickle
+    
+    temp_file = io.BytesIO()
+    with zipfile.ZipFile(
+        temp_file, "w", zipfile.ZIP_DEFLATED
+    ) as temp_file_opened:
+            # add csv files each library
+            temp_file_opened.writestr(f"model.pkl", pickle.dumps(self.fitted_model))
+            temp_file_opened.writestr(f"regression_data.csv", self.regression_data.to_csv(index=False))
+            temp_file_opened.writestr(f"transform_df.csv", self.transform_df.to_csv(index=True))
+            temp_file_opened.writestr(f"model_summary.txt", self.fitted_model.summary().as_text())
+            temp_file_opened.writestr(f"README.md", self.model_help)
+            
+    temp_file.seek(0)
+    
+    st.download_button(
+        label="Download Model",
+        data=temp_file,
+        file_name=f"{name}.zip",
+        mime="application/zip",
+    )
+            
+            
