@@ -54,7 +54,7 @@ def main():
   st.title('Model Page')
   
   default_index = MODEL_OPTIONS.index(ss.model_type) if ss.model_type in MODEL_OPTIONS else 0
-  if ss.model_type is 'None':
+  if ss.model_type == 'None':
     model_type = st.selectbox('Select a model type', MODEL_OPTIONS, index=default_index, key='model_type', on_change=model_type_callback)
   else:
     st.button('Change Model', on_click=change_model_type_callback)

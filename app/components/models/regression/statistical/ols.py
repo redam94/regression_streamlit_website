@@ -41,6 +41,11 @@ class OLS(BaseModel):
     self.intercept = False
     self.dep_var = None
     self.ind_var = None
+    self.dev_var_index = 0
+    self.ind_default = None
+    st.session_state[str(self)+"_ind"] = []
+    st.session_state[str(self)+"_dep"] = None
+    
     
   def fit(self):
     """
@@ -49,17 +54,23 @@ class OLS(BaseModel):
     if self.X_train is None or self.y_train is None:
       st.stop()
     self.fitted_model = self.model(self.y_train, self.X_train).fit('qr')
+    
+  def dep_var_callback(self):
+    self.dev_var_index = 0 if st.session_state[str(self)+"_dep"] is None else list(self.data.columns).index(st.session_state[str(self)+"_dep"])
+  
+  def ind_var_callback(self):
+    self.ind_default = [] if st.session_state[str(self)+ "_ind"] is None else st.session_state[str(self)+ "_ind"]
   
   def set_params(self):
     columns = st.columns([.2, .8])
     with columns[0]:
-      dep_var = st.selectbox('Dependent Variable', self.data.columns, index=list(self.data.columns).index(self.dep_var) if self.dep_var is not None else 0)
-      self.dep_var = dep_var
+      self.dep_var = st.selectbox('Dependent Variable', self.data.columns, index=self.dev_var_index, on_change=self.dep_var_callback, key=str(self)+"_dep")
+      
     with columns[1]:
-      defaults = [col for col in self.ind_var if col != self.dep_var] if self.ind_var is not None else None
+      
       #defaults = [col for col in defaults if col in self.data.columns and col != self.dep_var]
-      ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [self.dep_var]], default=defaults)
-      self.ind_var = ind_var
+      self.ind_var = st.multiselect('Independent Variables', [col for col in self.data.columns if col not in [self.dep_var]], default=self.ind_default, on_change=self.ind_var_callback, key=str(self)+"_ind")
+      
       self.intercept = st.checkbox('Intercept', value=True)
     if self.dep_var is None or self.ind_var is None:
       st.stop()
@@ -197,5 +208,5 @@ class OLS(BaseModel):
         file_name=f"{name}.zip",
         mime="application/zip",
     )
-            
+  
             

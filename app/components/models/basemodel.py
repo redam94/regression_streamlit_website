@@ -4,6 +4,7 @@ import matplotlib as mpl
 from typing import Optional
 import streamlit as st
 from streamlit import session_state as state
+from uuid import uuid4
 
 
 
@@ -11,6 +12,7 @@ class BaseModel:
   description: str = 'No description provided'
 
   def __init__(self, name: str, data):
+    self._uuid = uuid4()
     self.name = name
     self.fitted_model = None
     self.regression_data = None
@@ -50,8 +52,11 @@ class BaseModel:
   def set_params(self) -> None:
     pass
   
+  def __str__(self) -> str:
+    return f"{self.name} Model\n{self._uuid}"
 
   
 
-  
+  def __repr__(self) -> str:
+    return f"BaseModel"
   

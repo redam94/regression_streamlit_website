@@ -62,6 +62,8 @@ class FixedEffects(OLS):
 
     self.X_train = self.regression_data.drop(columns=[self.dep_var])
     self.y_train = self.regression_data[self.dep_var]
+    
+  
 
     
     
