@@ -6,9 +6,9 @@ WORKDIR /app
 # Install the modules specified in the requirements.txt
 RUN apt-get update && apt-get install -y \
    && apt-get install -y cmake build-essential gcc gfortran libopenblas-dev\
-   && pip install patchelf \
-   && pip install ninja \
-   && pip install -r requirements.txt
+   && pip3 install patchelf \
+   && pip3 install ninja \
+   && pip3 install -r requirements.txt
 
 # The port on which a container listens for connections
 EXPOSE 8501
