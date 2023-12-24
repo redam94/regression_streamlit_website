@@ -1,0 +1,3 @@
+docker node update --label-add swarmpit.influx-data=true $NODE_ID
+docker node update --label-add swarmpit.db-data=true $NODE_ID 
+docker node update --label-add traefik-public.traefik-public-certificates=true $NODE_ID

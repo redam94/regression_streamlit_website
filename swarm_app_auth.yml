@@ -32,7 +32,7 @@ services:
         - "traefik.http.routers.forward-auth.service=traefik-forward-auth"
 
   stapp:
-    image: redam94/regression:updated
+    image: redam94/regression:latest
     secrets:
       - source: secret_key
         target: /app/.streamlit/secrets.toml
