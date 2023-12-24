@@ -20,6 +20,7 @@ class OLS(BaseModel):
   - The independent variables are uncorrelated with the error term (may not be true for time series data or panel data see [here](https://timeseriesreasoning.com/contents/pooled-ols-regression-models-for-panel-data-sets/))
   - Normality of the error term
   """
+  
   model_help = """
   ## OLS Model
   ### This model uses statsmodels.api.OLS to fit a linear regression model to the data.
@@ -31,6 +32,7 @@ class OLS(BaseModel):
   - numpy
   3. load the regression data csv file
   """
+  
   def __init__(self, name: str="OLS", data=None):
     super().__init__(name, data)
 
